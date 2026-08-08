@@ -7,17 +7,14 @@ out/
 .vscode/
 
 # Java / Maven
-backend/target/
+**/target/
 *.class
 
-# Maven
-backend/.mvn/timing.properties
-
 # Node
-frontend/node_modules/
+**/node_modules/
 frontend/dist/
 
-# Environment variables
+# Environment / secrets
 .env
 .env.*
 !.env.example
