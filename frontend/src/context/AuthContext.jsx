@@ -1,36 +1,36 @@
-import { createContext, useContext, useState } from "react";
-import { loginUser, logoutUser, registerUser } from "../services/authService";
+import { createContext, useContext, useEffect, useState } from "react";
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    Boolean(localStorage.getItem("token")),
-  );
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
 
-  const login = async (credentials) => {
-    const data = await loginUser(credentials);
+  const [isAuthenticated, setIsAuthenticated] = useState(Boolean(token));
 
-    setIsLoggedIn(true);
+  useEffect(() => {
+    setIsAuthenticated(Boolean(token));
+  }, [token]);
 
-    return data;
-  };
+  const login = (jwtToken) => {
+    localStorage.setItem("token", jwtToken);
 
-  const register = async (userData) => {
-    return await registerUser(userData);
+    setToken(jwtToken);
+    setIsAuthenticated(true);
   };
 
   const logout = () => {
-    logoutUser();
-    setIsLoggedIn(false);
+    localStorage.removeItem("token");
+
+    setToken(null);
+    setIsAuthenticated(false);
   };
 
   return (
     <AuthContext.Provider
       value={{
-        isLoggedIn,
+        token,
+        isAuthenticated,
         login,
-        register,
         logout,
       }}
     >
@@ -40,5 +40,11 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error("useAuth must be used inside AuthProvider");
+  }
+
+  return context;
 };
