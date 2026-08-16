@@ -19,17 +19,20 @@ public interface TransactionRepo
         JpaSpecificationExecutor<Transaction> {
 
     // For pagination
+
     Page<Transaction> findByUser(
             User user,
             Pageable pageable
     );
 
     // For analytics
+
     List<Transaction> findAllByUser(
             User user
     );
 
     // For filtering by type
+
     Page<Transaction> findByUserAndType(
             User user,
             TransactionType type,
@@ -37,6 +40,7 @@ public interface TransactionRepo
     );
 
     // Category
+
     Page<Transaction> findByUserAndCategoryIgnoreCase(
             User user,
             String category,
@@ -44,6 +48,7 @@ public interface TransactionRepo
     );
 
     // Type + Category
+
     Page<Transaction> findByUserAndTypeAndCategoryIgnoreCase(
             User user,
             TransactionType type,
@@ -52,6 +57,7 @@ public interface TransactionRepo
     );
 
     // Date range
+
     Page<Transaction> findByUserAndDateBetween(
             User user,
             LocalDate startDate,
@@ -60,6 +66,7 @@ public interface TransactionRepo
     );
 
     // Type + Date range
+
     Page<Transaction> findByUserAndTypeAndDateBetween(
             User user,
             TransactionType type,
@@ -69,6 +76,7 @@ public interface TransactionRepo
     );
 
     // Category + Date range
+
     Page<Transaction>
     findByUserAndCategoryIgnoreCaseAndDateBetween(
             User user,
@@ -89,10 +97,7 @@ public interface TransactionRepo
             Pageable pageable
     );
 
-
-    // =========================================================
     // TOTAL INCOME / EXPENSE
-    // =========================================================
 
     @Query("""
         SELECT COALESCE(SUM(t.amount), 0)
@@ -105,10 +110,7 @@ public interface TransactionRepo
             @Param("type") TransactionType type
     );
 
-
-    // =========================================================
     // CATEGORY EXPENSES
-    // =========================================================
 
     @Query("""
         SELECT t.category, SUM(t.amount)
@@ -123,10 +125,7 @@ public interface TransactionRepo
             @Param("type") TransactionType type
     );
 
-
-    // =========================================================
     // DATE RANGE TOTAL
-    // =========================================================
 
     @Query("""
         SELECT COALESCE(SUM(t.amount), 0)

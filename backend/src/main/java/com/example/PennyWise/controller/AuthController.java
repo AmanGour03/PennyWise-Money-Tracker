@@ -1,41 +1,29 @@
 package com.example.PennyWise.controller;
 
-import com.example.PennyWise.model.User;
-import com.example.PennyWise.repo.UserRepo;
-import com.example.PennyWise.service.JwtService;
+import com.example.PennyWise.dto.AuthResponse;
+import com.example.PennyWise.dto.LoginRequest;
+import com.example.PennyWise.dto.RegisterRequest;
+import com.example.PennyWise.service.AuthService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthController {
-    @Autowired
-    private UserRepo repo;
-    @Autowired
-    private JwtService jwtService;
-    @Autowired
-    private AuthenticationManager authenticationManager;
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+
+    private final AuthService authService;
+
     @PostMapping("/register")
-    public String register(@Valid @RequestBody User user) {
-        user.setPassword(encoder.encode(user.getPassword()));
-        repo.save(user);
-        return "User registered successfully";
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
     }
 
     @PostMapping("/login")
-    public Map<String, String> login(@RequestBody User user) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-        String token = jwtService.generateToken(user.getUsername());
-        return Map.of("token", token);
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 }

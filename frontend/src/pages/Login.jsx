@@ -1,120 +1,183 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
-import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
   });
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // =========================================================
+  // HANDLE INPUT
+  // =========================================================
+
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    setFormData((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+
+    setError("");
   };
+
+  // =========================================================
+  // LOGIN
+  // =========================================================
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setError("");
 
+    if (!formData.username.trim()) {
+      setError("Username is required.");
+      return;
+    }
+
+    if (!formData.password) {
+      setError("Password is required.");
+      return;
+    }
+
     try {
       setLoading(true);
 
-      const response = await api.post("/auth/login", formData);
+      const response = await api.post("/auth/login", {
+        username: formData.username,
+        password: formData.password,
+      });
 
+      console.log("Login response:", response.data);
+
+      // Store JWT
       const token = response.data.token;
 
       if (!token) {
-        throw new Error("Token was not returned by server.");
+        setError("Token was not received from server.");
+        return;
       }
 
-      login(token);
+      localStorage.setItem("token", token);
 
-      navigate("/", {
-        replace: true,
-      });
+      // Redirect to dashboard
+      navigate("/", { replace: true });
     } catch (error) {
-      console.error(error);
+      console.error("Login error:", error);
 
-      setError(error.response?.data?.message || "Invalid email or password.");
+      setError(
+        error.response?.data?.message || "Invalid username or password.",
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6">
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-8">
-        <h1 className="text-3xl font-bold text-white">Welcome Back</h1>
+    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4 text-white">
+      <div className="w-full max-w-md">
+        {/* Logo */}
 
-        <p className="mt-2 text-slate-400">Login to your PennyWise account</p>
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-indigo-400">PennyWise</h1>
 
-        {error && (
-          <div className="mt-6 rounded-lg border border-red-800 bg-red-950/40 p-3 text-sm text-red-400">
-            {error}
-          </div>
-        )}
+          <p className="mt-2 text-slate-400">Manage your money smarter.</p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-          <div>
-            <label className="mb-2 block text-sm text-slate-300">Email</label>
+        {/* Login Card */}
 
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="you@example.com"
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-indigo-500"
-            />
-          </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-xl sm:p-8">
+          <h2 className="text-2xl font-bold">Welcome Back</h2>
 
-          <div>
-            <label className="mb-2 block text-sm text-slate-300">
-              Password
-            </label>
+          <p className="mt-2 text-sm text-slate-400">
+            Login to your PennyWise account.
+          </p>
 
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              placeholder="••••••••"
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-indigo-500"
-            />
-          </div>
+          {/* Error */}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-indigo-600 py-3 font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
+          {error && (
+            <div className="mt-6 rounded-lg border border-red-800 bg-red-950/40 p-3 text-sm text-red-400">
+              {error}
+            </div>
+          )}
 
-        <p className="mt-6 text-center text-sm text-slate-400">
-          Don't have an account?{" "}
-          <Link
-            to="/register"
-            className="text-indigo-400 hover:text-indigo-300"
-          >
-            Create account
-          </Link>
-        </p>
+          {/* Form */}
+
+          <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+            {/* Username */}
+
+            <div>
+              <label
+                htmlFor="username"
+                className="mb-2 block text-sm font-medium text-slate-300"
+              >
+                Username
+              </label>
+
+              <input
+                id="username"
+                name="username"
+                type="text"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="Enter your username"
+                autoComplete="username"
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-indigo-500"
+              />
+            </div>
+
+            {/* Password */}
+
+            <div>
+              <label
+                htmlFor="password"
+                className="mb-2 block text-sm font-medium text-slate-300"
+              >
+                Password
+              </label>
+
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                autoComplete="current-password"
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-indigo-500"
+              />
+            </div>
+
+            {/* Submit */}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg bg-indigo-600 px-4 py-3 font-semibold text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {loading ? "Logging in..." : "Login"}
+            </button>
+          </form>
+
+          {/* Register */}
+
+          <p className="mt-6 text-center text-sm text-slate-400">
+            Don't have an account?{" "}
+            <Link
+              to="/register"
+              className="font-medium text-indigo-400 hover:text-indigo-300"
+            >
+              Create one
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

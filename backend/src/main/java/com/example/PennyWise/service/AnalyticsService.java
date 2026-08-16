@@ -27,10 +27,7 @@ public class AnalyticsService {
     private final TransactionRepo transactionRepo;
     private final UserRepo userRepo;
 
-
-    // =========================================================
     // GET CURRENT USER
-    // =========================================================
 
     private User getCurrentUser(Principal principal) {
 
@@ -41,10 +38,7 @@ public class AnalyticsService {
                 );
     }
 
-
-    // =========================================================
     // SUMMARY
-    // =========================================================
 
     public AnalyticsSummaryDTO getSummary(
             Principal principal
